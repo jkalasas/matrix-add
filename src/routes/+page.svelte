@@ -96,7 +96,7 @@
 	<title>Matrix Addition</title>
 </svelte:head>
 
-<main style="margin-top: 5rem;">
+<main class="main">
 	<div class="matrix-settings">
 		<div class="setting-entry">
 			<label for="rows">Rows</label>
@@ -150,6 +150,10 @@
 </main>
 
 <style>
+  .main {
+    margin-top: 5rem;
+  }
+
 	.matrix-settings {
 		width: 100%;
 		display: flex;
