@@ -6,17 +6,18 @@
 
 	/** @typedef {import('$lib/matrix/types/matrix').Matrix} Matrix */
 
-	let rows = 1;
-	let cols = 1;
 	let matrixCount = 1;
 
 	/** @type {Matrix[]} */
-	let matrices = [newMatrix(rows, cols)];
+	let matrices = [newMatrix(1, 1)];
 	/** @type {Boolean[]} */
 	let subtracts = [];
 
 	/** @type {Matrix?} */
 	let resultMatrix = null;
+
+	let isSolved = false;
+	let isValid = false;
 
 	/**
 	 * @param {Matrix[]} matrices
@@ -42,6 +43,26 @@
 		);
 	}
 
+	function solveResult() {
+		if (matrices.length <= 1) {
+			return;
+		}
+
+    isSolved = true;
+
+		try {
+			resultMatrix = matrices.reduce((prev, cur, index) => {
+				if (!prev) return cur;
+				const result = addMatrix(prev, cur, { subtract: subtracts[index - 1] });
+				return result;
+			}, /** @type {Matrix?} */ (null));
+      isValid = true;
+		} catch {
+      console.log('error');
+			isValid = false;
+		}
+	}
+
 	/**
 	 * @param {Number} rows
 	 * @param {Number} cols
@@ -62,7 +83,7 @@
 			if (i <= matrices.length) {
 				newMatrices.push(matrices[i - 1]);
 			} else {
-				newMatrices.push(newMatrix(rows, cols));
+				newMatrices.push(newMatrix(1, 1));
 			}
 
 			if (i === 1) continue;
@@ -83,13 +104,11 @@
 	}
 
 	function reset() {
-		rows = 1;
-		cols = 1;
 		matrixCount = 1;
-		matrices = [newMatrix(rows, cols)];
+		matrices = [newMatrix(1, 1)];
 	}
 
-	$: updateResult(matrices, subtracts);
+	//	$: updateResult(matrices, subtracts);
 </script>
 
 <svelte:head>
@@ -98,26 +117,6 @@
 
 <main class="main">
 	<div class="matrix-settings">
-		<div class="setting-entry">
-			<label for="rows">Rows</label>
-			<input
-				type="number"
-				name="rows"
-				bind:value={rows}
-				min={1}
-				on:change={() => onResize(rows, cols)}
-			/>
-		</div>
-		<div class="setting-entry">
-			<label for="columns">Columns</label>
-			<input
-				type="number"
-				name="columns"
-				bind:value={cols}
-				min={1}
-				on:change={() => onResize(rows, cols)}
-			/>
-		</div>
 		<div class="setting-entry">
 			<label for="matrix-count">Matrix Count</label>
 			<input
@@ -140,19 +139,25 @@
 				>
 			{/if}
 
-			<Matrix bind:matrix allowMod={false} on:change={() => (matrices = [...matrices])} />
+			<Matrix bind:matrix on:change={() => (matrices = [...matrices])} />
 		{/each}
-		{#if resultMatrix}
-			<span>=</span>
-			<Matrix matrix={resultMatrix} editable={false} allowMod={false} />
+		{#if matrixCount > 1}
+			<button class="operation-btn" on:click={solveResult}>=</button>
+		{/if}
+		{#if isSolved}
+			{#if isValid && resultMatrix !== null}
+				<Matrix matrix={resultMatrix} editable={false} allowMod={false} />
+			{:else}
+				<span> Invalid Matrix </span>
+			{/if}
 		{/if}
 	</div>
 </main>
 
 <style>
-  .main {
-    margin-top: 5rem;
-  }
+	.main {
+		margin-top: 5rem;
+	}
 
 	.matrix-settings {
 		width: 100%;
@@ -188,7 +193,7 @@
 		border-radius: 2rem;
 		background-color: white;
 		border: black 1px solid;
-    font-size: 1.5rem;
-    vertical-align: middle;
+		font-size: 1.5rem;
+		vertical-align: middle;
 	}
 </style>
